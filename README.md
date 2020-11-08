@@ -241,8 +241,12 @@ var handle = window.requestIdleCallback(callback[, options])
 #### 14.事件绑定有几种方式
 
 + 在DOM元素直接绑定
+
 + 在javascript代码中绑定 xxx.click = function () {}
+
 + 事件监听器绑定 xxx.addEvemtListener('event', () =>{})
+
+  addEventListener第三个参数为true，代表再捕获阶段绑定，第三个参数为false，代表在冒泡阶段绑定
 
 #### 15.DOM事件流以及冒泡和捕获
 
@@ -296,4 +300,44 @@ function once (ele, eventType, fn) {
     ele.addEventListener(eventType, handle)
 }
 ```
+
+#### 19.简单请求和复杂请求的区别
+
++ 简单请求：
+
+  **1.请求方法是以下三种方法之一：**
+
+  + HEAD
+  + GET
+  + POST
+
+​        **2.请求头不超过以下几种字段：**
+
+​			Accept
+
+​			Accept_language
+
+​			Content-language
+
+​			Last-Event-ID
+
+​			Content-type:只限于三个值application/x-www-form-urlencoded、multipart/form-data、text/plain
+
++ 复杂请求：
+
+  非简单请求就是复杂请求
+
+  **复杂请求在正式请求前都会有预检请求，在浏览器中都能看到有OPTIONS请求，用于向服务器请求权限信息的。**
+
+  **axios都是复杂请求，ajax可以是简单请求**
+
+#### 20.event.target和event.currentTarget区别
+
++ event.target指向引起触发事件的元素，而event.currentTarget则是事件绑定的元素，点击哪个元素就是哪个元素
+
+
+
+
+
+
 
