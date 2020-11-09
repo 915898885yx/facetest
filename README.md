@@ -337,9 +337,99 @@ function once (ele, eventType, fn) {
 
 #### 21.vue父子组件生命周期执行顺序
 
++ 加载渲染过程：
 
+  1.父beforeCreate
 
+  2.父created
 
+  3.父beforeMount
 
+  4.子beforeCreate
 
+  5.子created
 
+  6.子beforeMount
+
+  7.子mounted
+
+  8.父mounted
+
++ 子组件更新过程：
+
+  1.父beforeUpdate
+
+  2.子beforeUpdate
+
+  3.子updated
+
+  4.父updated
+
++ 父组件更新过程：
+
+  1.父beforeUpdate
+
+  2.父updated
+
++ 销毁过程：
+
+  1.父beforeDestory
+
+  2.子beforeDestory
+
+  3.子destoryed
+
+  4.父destoryed
+
+#### 22.为什么v-for和v-if不能连用
+
++ v-for比v-if优先执行，每次都需要遍历数组，会影响速度，尤其需要渲染很小一部分时。
++ 如果连用会把v-if给每个元素都添加一下，会造成性能问题。
++ 一般v-if放在外层判断，不符合就不去执行，或者使用computed代替v-if
+
+#### 23.watch中的deep：true是如何实现的
+
+// TODO
+
+#### 24.组件中的data为什么是一个函数而不是一个对象
+
++ 因为对象是引用类型，如果data是对象的情况下会造成所有的组件公用一个data。而data是一个函数的画，每次执行函数都会返回一个新对象，这样的话每个组件都会维护一份独立的对象data
+
+#### 25.action和mutation区别
+
++ 流程顺序：修改State拆成两部分，视图触发action,action再触发mutation
+
++ 角色定位：
+
+  1.mutation：专注于需改State，理论上是修改State的唯一途径
+
+  2.action：业务代码，异步请求
+
++ 限制：角色不同
+
+  mutation：必须同步执行
+
+  action：可以异步，但不能直接操作state
+
+#### 26.v-html会导致哪些问题？
+
++ v-html更新的元素是innerHTML，内容按照普通的HTML插入，不会作为Vue模板进行编译，但是有时候我们需要渲染html片段中插值表达式，或者按照vue模板语法给dom元素绑定事件
++ 在单文件组件里，scoped样式不会应用在v-html内部，因为那部分的html没有被Vue的模板编译器处理，如果希望针对v-html的内容设置带作用域的css，你可以用一个全局的style标签手动设置类似BEM的作用域策略
++ 后台返回的html片段以及css样式和js，但是返回js步执行，浏览器在渲染时候并没有渲染js，需要通过$nextTick中动态创建script标签
+
+#### 27.vue为何采用异步渲染
+
++ 浏览器执行机制：
+
+  主进程-微异步-dom渲染-宏异步
+
+  异步渲染dom。通过nexttick改变属性值，不论修改多少次，最后都是进行一次dom渲染，提高性能。
+
+#### 28.ajax放在哪个声明周期中
+
++ 看情况，不需要操作dom，在created中，需要操作dom在mounted中
++ 但是服务端渲染没有mounted，所以在created中
+
+#### 29.vue的computed的特点-TODO
+
+// https://blog.csdn.net/qq_42072086/article/details/106993983
