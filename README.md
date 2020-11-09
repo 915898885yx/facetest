@@ -335,6 +335,8 @@ function once (ele, eventType, fn) {
 
 + event.target指向引起触发事件的元素，而event.currentTarget则是事件绑定的元素，点击哪个元素就是哪个元素
 
+#### 21.vue父子组件生命周期执行顺序
+
 
 
 
