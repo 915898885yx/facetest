@@ -433,3 +433,5 @@ function once (ele, eventType, fn) {
 #### 29.vue的computed的特点-TODO
 
 // https://blog.csdn.net/qq_42072086/article/details/106993983
+
++ 概念：computed是一个计算属性，类似过滤器，对绑定到view的数据进行处理，计算属性的结果会被缓存，除非依赖的响应式结果发生变化才会重新计算，计算属性不是异步更新，渲染的时候才能取到最新的值。
