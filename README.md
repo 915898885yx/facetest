@@ -443,3 +443,57 @@ function once (ele, eventType, fn) {
 + 解除事件的绑定
 
 #### 31.vue-router中的导航守卫有哪些
+
++ 全局前置守卫：router.beforeEach（(to, from, next)）
+
+  每次路由的跳转都要经过的全局守卫，确保next方法，不然钩子不会被resolved
+
++ 全局后置守卫：router.afterEach((to, from))
+
+  不会接收next函数，也不会改变导航本身
+
++ 全局解析守卫：router.beforeResolve
+
+  和router.beforeEach类似，区别是在导航被确认之前，同时在所有组件内守卫和异步路由组件被解析之后，解析守卫就被调用
+
++ 路由独享守卫：beforeEach
+
+  ```javascript
+  [{
+      path: '',
+      component: Foo,
+      beforeEnter: (to, from, next)
+  }]
+  ```
+
++ 组件内的守卫
+
+  + beforeRouteEnter
+
+  + beforeRouteUpdata
+
+  + beforeRouteLeave
+
+    ```javascript
+    const Foo = {
+        template: `...`,
+        beforeRouteEnter (to, from, next){
+            //在渲染该组件对应的路由被confirm前
+            //不能获取this
+            //在守卫执行前，组件实例还没被创建
+            next(vm => {
+                //通过vm访问组件实例
+            })
+        },
+        beforeRouteUpdate (to, from, next) {
+            //在当前路由改变，但是该组件被复用时调用 /foo/:id
+        },
+        beforeRouteLeave (to, from, next) {
+            // 导航离开该组件的对应的路由时调用
+            // 可以访问this
+        }
+    }
+    ```
+
+    
+
