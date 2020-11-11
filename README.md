@@ -435,3 +435,11 @@ function once (ele, eventType, fn) {
 // https://blog.csdn.net/qq_42072086/article/details/106993983
 
 + 概念：computed是一个计算属性，类似过滤器，对绑定到view的数据进行处理，计算属性的结果会被缓存，除非依赖的响应式结果发生变化才会重新计算，计算属性不是异步更新，渲染的时候才能取到最新的值。
+
+#### 30.何时需要使用beforeDestoryed
+
++ 在当前组件使用了$on方法，需要在组件销毁前解绑
++ 清除自己定义的定时器
++ 解除事件的绑定
+
+#### 31.vue-router中的导航守卫有哪些
