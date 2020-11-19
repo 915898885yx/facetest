@@ -443,3 +443,27 @@ function once (ele, eventType, fn) {
 + 解除事件的绑定
 
 #### 31.vue-router中的导航守卫有哪些
+
+#### 32.实现函数
+
+```javascript
+实现sum函数，使得
+sum(1,2,3).sumOf() //6
+sum(2,3)(2).sumOf() //7
+sum(1)(2)(3)(4).sumOf() //10
+```
+
+```javascript
+function sum (...args) {
+	var ret = args.reduce((x, y) => x + y)
+	var add = function (...args) {
+		return sum(ret, ...args)
+	}
+	add.sumOf = function () {
+		return ret
+	}
+	return add
+}
+console.log(sum(1, 2)(5)(8).sumOf())
+```
+
