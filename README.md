@@ -513,3 +513,54 @@ addTask(300, 3)
 addTask(100, 1) 
 ```
 
+#### 34.数组有哪写属性
+
++ 内置属性：length,索引
++ 自定义属性 arr.self = '123'
+
+#### 35.js实现大数相乘
+
+```javascript
+var multiply = function(num1, num2) {
+  //if(isNaN(num1) || isNaN(num2)) return '' //判断输入是不是数字
+  var len1 = num1.length,
+    len2 = num2.length
+  var ans = []
+  for (var i = len1 - 1; i >= 0; i--) {    //这里倒过来遍历很妙,不需要处理进位了
+    for (var j = len2 - 1; j >= 0; j--) {
+      var index1 = i + j
+      var index2 = i + j + 1
+      var mul = num1[i] * num2[j] + (ans[index2] || 0)
+      ans[index1] = Math.floor(mul / 10) + (ans[index1] || 0)
+      ans[index2] = mul % 10
+    }
+  }
+  var result = ans.join('')
+    //这里结果有可能会是多个零的情况，需要转成数字判断
+    //原来写的是return +result === 0 ? '0' : result，result字符串会出现有前置0的情况，感谢评论区小伙伴@nicknice的提醒让我找到了这个错误
+  return +result === 0 ? '0' : result.replace(/^0+/,'')
+ 
+}
+console.log(multiply([1, 3, 5], [2,4,5]))
+```
+
+#### 36.script标签async和defer区别
+
++ async、defer这两个属性使得script都不会阻塞DOM渲染。
+
++ defer:
+  + 如果设置了该属性，则浏览器会异步下载文件，并不会影响后面得DOM渲染
+  + 如果多个设置得defer得script得标签存在，则会按照顺序执行所有得script
+  + defer脚本会在文件渲染完毕后，DOMContentLoaded事件调用前执行
+
++ async：
+  + async的设置，会使得script脚本异步的加载并在与允许的情况下执行
+  + asunc的执行，并不会按照script在页面中的顺序来执行，而是谁先加载谁先执行
+
+#### 37.this的几种情况
+
++ 通过addEventListener绑定方法，this指向dom元素，DOM2级绑定事件div.attachEvent中this指向window
++ 普通函数执行，this指向window。严格模式下是undefined
++ 构造函数this指向构造函数的实例
++ call/apply/bind改变函数中this的指向
++ 箭头函数没有this，this是上级上下文对象
