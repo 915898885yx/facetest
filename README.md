@@ -839,3 +839,10 @@ function myTrim(str) {
 
 1. QUIC 的传输单元是 Packet，加密单元也是 Packet，整个加密、 传输、解密都基于 Packet，这样就能避免 TLS 的队头阻塞问题;
 2. QUIC 基于 UDP，UDP 的数据包在接收端没有处理顺序，即使中间 丢失一个包，也不会阻塞整条连接，其他的资源会被正常处理。
+
+#### 44.vuex相关问题
+
+```
+https://blog.csdn.net/chenqiuge1984/article/details/80129368
+```
+
