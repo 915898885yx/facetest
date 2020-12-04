@@ -564,3 +564,278 @@ console.log(multiply([1, 3, 5], [2,4,5]))
 + 构造函数this指向构造函数的实例
 + call/apply/bind改变函数中this的指向
 + 箭头函数没有this，this是上级上下文对象
+
+#### 38.bind实现原理
+
+```javascript
+Function.prototype.bind = function () {
+  var that = this, obj = arguments[0], _args = Array.prototype.slice.call(arguments, 1)
+  if (typeof that !== 'function') {
+    return Error('typeError')
+  }
+  return function () {
+    var args = Array.prototype.slice.call(arguments)
+    return that.apply(obj, _args.concat(args))
+  }
+}
+```
+
+#### 39.数组扁平化
+
+```javascript
+function flatten (list) {
+  var result = []
+  list.forEach(item => {
+    if (Array.isArray(item)) {
+      result = [...result, ...flatten(item)]
+    } else {
+      result.push(item)
+    }
+  })
+  return result
+}
+```
+
+#### 40.深拷贝
+
+```javascript
+function copy(obj,appeard=new Map()) {
+ if (!(obj instanceof Object)) return obj//如果是原始数据类型
+    if (appeard.has(obj)) return appeard.get(obj)//如果已经出现过
+
+    let result=Array.isArray(obj)?[]:{}
+    appeard.set(obj,result)//将新对象放入map
+
+    //遍历所有属性进行递归拷贝
+    ;[...Object.keys(obj),...Object.getOwnPropertySymbols(obj)]
+     .forEach(key=>result[key]=copy(obj[key],appeard))
+
+    return result
+}
+```
+
+##### `JSON.stringify`
+
+- 只能处理纯JSON数据
+- 有几种情况会发生错误
+- 包含不能转成 JSON 格式的数据
+- 循环引用
+- undefined,NaN, -Infinity, Infinity 都会被转化成null
+- **RegExp/函数**不会拷贝
+- new Date()会被转成字符串
+
+#### 41.promise原理
+
+```javascript
+function Promise (exector) {
+	var self = this
+	self.status = 'pending'
+	self.data = undefined
+	self.resolveCallbackList = []
+	self.rejectCallbackList = []
+	function resolve (value) {
+		setTimeout(() => {
+			self.status = 'resolved'
+			self.data = value
+			self.resolveCallbackList.forEach(fn => fn(self.data))
+		}, 0)
+	}
+	function reject (value) {
+		setTimeout(() => {
+			self.status = 'rejected'
+			self.data = value
+			self.rejectCallbackList.forEach(fn => fn(self.data))
+		}, 0)
+	}
+	try{
+		exector(resolve, reject)
+	} catch(e) {
+		reject(e)
+	}
+}
+
+function resolvePromise(promise2, x, resolve, reject) {
+	var self = this
+	var thenCalledThrow = false
+	if (promise2 === x) {
+		return new TypeError('')
+	}
+	if (x instanceof Promise) {
+		if (self.status === 'pending') {
+			x.then(function (v) {
+				resolvePromise(promise2, v, resolve, reject)
+			}, reject)
+		} else {
+			x.then(resolve, reject)
+		}
+		return
+	}
+	if (x != null && typeof x === 'object' || typeof x === 'function') {
+		try{
+			var then = x.then
+			if (typeof then === 'function') {
+				then.call(x, function (rs) {
+					return resolvePromise(promise2, rs, resolve, reject)
+				}, function (er) {
+					return reject(er)
+				})
+			} else {
+				resolve(x)
+			}
+		} catch(e) {
+			reject(e)
+		}
+	} else {
+		resolve(x)
+	}
+}
+
+Promise.prototype.then = function (onResolve, onReject) {
+	var self = this
+	if (self.status === 'resolved') {
+		return new Promise(function (resolve, reject) {
+			try {
+				var x = onResolve(self.data)
+				if (x instanceof Promise) {
+					x.then(resolve, reject)
+				} else {
+					reject(x)
+				}
+			} catch(e) {
+				reject(e)
+			}
+		})
+	}
+	if (self.status === 'rejected') {
+		return new Promise(function (resolve, reject) {
+			try{
+				var x = onReject(self.data)
+				if (x instanceof Promise) {
+					x.then(resolve, reject)
+				} else {
+					reject(x)
+				}
+			} catch(e) {
+				reject(e)
+			}
+		})
+	}
+	if (self.status === 'pending') {
+		return new Promise(function (resolve, reject) {
+			self.resolveCallbackList.push(function (value) {
+				try{
+					var x = onResolve(value)
+					if (x instanceof Promise) {
+						x.then(resolve, reject)
+					} else {
+						resolve(x)
+					}
+				} catch(e) {
+					reject(e)
+				}
+			})
+			self.rejectCallbackList.push(function (value) {
+				try{
+					var x = onReject(value)
+					if (x instanceof Promise) {
+						x.then(resolve, reject)
+					} else {
+						reject(x)
+					}
+				} catch(e) {
+					reject(e)
+				}
+			})
+		})
+	}
+}
+Promise.prototype.valueOf = function () {
+	return this.data
+}
+Promise.prototype.catch = function (onReject) {
+	return this.then(null, onReject)
+}
+Promise.prototype.finally = function (fn) {
+	return this.then(function (v) {
+		setTimeout(fn)
+		return v
+	}, function (r) {
+		setTimeout(fn)
+		throw r
+	})
+}
+Promise.prototype.all = function (list) {
+  return new Promise((resolve, reject) => {
+    if (list.length == 0) return resolve([])
+    let count, result = []
+    list.forEach((promise, index) => {
+      Promise.resolve(promise).then(value => {
+        result[index] = value
+        if (++count === list.length) resolve(result)
+      }, resaon => reject(resaon))
+    })
+  })
+}
+function resolvePromise(promise2, x, resolve, reject) {
+	var then
+	var thenCalledThrow = false
+	if (promise2 === x) {
+		return reject(new TypeError('chaining cycle detected for promise'))
+	}
+	if (x instanceof Promise) {
+		if (x.status === 'pending') {
+			x.then(function (v) {
+				resolvePromise(promise2, v, resolve, reject)
+			}, reject)
+		} else {
+			x.then(resolve, reject)
+		}
+	}
+}
+```
+
+#### 42.trim()实现
+
+```javascript
+function myTrim(str) {
+  return str.replace(/(^\s+)|(\s+$)/g,'')//将前空格和后空格替换为空
+}
+```
+
+#### 43.http1.1、http2和http3差异，有做什么优化
+
+- http1.1
+
+- 增加了keep-alive长连接
+- 管线化发送请求，不用等一个请求回来再发另外一个请求
+- 提供了可以指定发送长度的数据块,请求头引入了 range 头域
+
++ http2
+
+- 多路复用：HTTP/2 使用多路复用技术，使用一个 TCP 连接并发处理多个请求，不但节约了开销而且可处理请求的数量也比 HTTP 1.1 大了很多.在 HTTP 1.x 中，如果客户端要想发起多个并行请求以提升性能，则必须使 用多个 TCP 连接。这种模型也会导致队首阻塞，从而造成底层 TCP 连接的效率低下。
+- 数据传输：HTTP/2 采用二进制格式传输数据，而非 HTTP 1.x 的文本格式，二进制协议解析起来更高效
+- 头部压缩：HTTP 1.1 不支持 Header 数据压缩，HTTP/2 使用 HPACK 算法对 Header 的数据进行压缩，使得数据传输更快
+- 服务器推送（Server Push）：当对支持 HTTP/2 的服务器请求数据的时候，服务器会顺便把一些客户端需要的资源一起推送到服务器，这种方式适用于加载静态资源，节约带宽
+
++ http3
+
+- 运行在 QUIC 之上的 HTTP 协议被称为 HTTP/3(HTTP-over-QUIC)
+- QUIC 协议(Quick UDP Internet Connection)基于 UDP，正是看中了 UDP 的速度与效率。同时 QUIC 也整合了 TCP、TLS 和 HTTP/2 的优 点，并加以优化。
+- 特点:
+
+1. 1. 减少了握手的延迟(1-RTT 或 0-RTT)
+   2. 多路复用，并且没有 TCP 的阻塞问题
+
++ 对首阻塞问题
+
+- HTTP/1.1 和 HTTP/2 都存在队头阻塞问题(Head of line blocking)
+- HTTP/1.1 的队头阻塞。一个 TCP 连接同时传输 10 个请求，其中第 1、2、3 个请求已被客户端接收，但第 4 个请求丢失，那么后面第 5 - 10 个请求都被阻塞，需要等第 4 个请求处理完毕才能被处理，这样 就浪费了带宽资源。
+- HTTP/2 的多路复用虽然可以解决“请求”这个粒度的阻塞，但 HTTP/2 的基础 TCP 协议本身却也存在着队头阻塞的问题。
+- 由于 HTTP/2 必须使用 HTTPS，而 HTTPS 使用的 TLS 协议也存在队 头阻塞问题。
+- 队头阻塞会导致 HTTP/2 在更容易丢包的弱网络环境下比 HTTP/1.1 更慢。
+- 那 QUIC 解决队头阻塞问题的的方法:
+
+
+
+1. QUIC 的传输单元是 Packet，加密单元也是 Packet，整个加密、 传输、解密都基于 Packet，这样就能避免 TLS 的队头阻塞问题;
+2. QUIC 基于 UDP，UDP 的数据包在接收端没有处理顺序，即使中间 丢失一个包，也不会阻塞整条连接，其他的资源会被正常处理。
