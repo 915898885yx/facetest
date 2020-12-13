@@ -846,3 +846,166 @@ function myTrim(str) {
 https://blog.csdn.net/chenqiuge1984/article/details/80129368
 ```
 
+##### 1.vuex是否可以不通过mutation修改状态？
+
++ 在非严格模式下，可以通过vuex实例直接修改state状态，并且视图会更新，在严格模式下会报错
+
+##### 2.vuex是否可以在mutation中通过异步方式修改state状态
+
++ 在非严格模式下，可以通过mutation异步修改state状态，不过会影响devtool的时间旅行，在严格模式下会报错
+
+#### 45.mvvm
+
+```javascript
+function Vue (option) {
+  this.$option = option
+  var data = this._data = option.data
+  observe(data)
+  for (let key in data) {
+    Object.defineProperty(this, key, {
+      enumerable: true,
+      get () {
+        return this._data[key]
+      },
+      set (newVal) {
+        this._data[key] = newVal
+      }
+    })
+  }
+  initComputed(this, option.computed)
+  new Compile(this, option.el)
+  
+}
+
+function Observe (data) {
+  let dep = new Dep()
+  for (let key in data) {
+    let val = data[key]
+    if(typeof val === 'object') {
+      observe(val)
+      continue
+    }
+    Object.defineProperty(data, key, {
+      enumerable: true,
+      get () {
+        Dep.target && dep.addSub(Dep.target)
+        return val
+      },
+      set (newVal) {
+        if (newVal === val) return
+        val = newVal
+        console.log(`修改了${key} == ${newVal}`)
+        if (typeof newVal === 'object') {
+          observe(newVal)
+        }
+        dep.notify()
+      }
+    })
+  }
+}
+
+function observe (data) {
+  return new Observe(data)
+}
+
+function Compile (vm, el) {
+  vm.$el = document.querySelector(el)
+  let fragment = document.createDocumentFragment()
+  while(child = vm.$el.firstChild) {
+    fragment.appendChild(child)
+  }
+  replace(vm, fragment)
+  function replace(vm, fragment) {
+    Array.from(fragment.childNodes).forEach(node => {
+      let text = node.textContent
+      let reg = /\{\{(.*)\}\}/
+      if (node.nodeType === 3 && reg.test(text)) {
+        let name = reg.exec(text)[1].split('.')
+        let val = vm
+        name.forEach(key => {
+          val = val[key]
+        })
+        new Watcher(vm, name, function (newVal) {
+          node.textContent = text.replace(reg, newVal)
+        })
+        node.textContent = text.replace(reg, val)
+      }
+      if (node.nodeType === 1) {
+        let attrs = node.attributes
+        Array.from(attrs).forEach(attr => {
+          if (attr.name === 'v-model') {
+            new Watcher(vm, attr.value.split('.'), function (newVal) {
+              node.value = newVal
+            })
+            let val = vm
+            let exp = attr.value.split('.')
+            exp.forEach(key => {
+              val = val[key]
+            })
+            node.value = val
+            node.addEventListener('input', function (e) {
+              let newVal1 = e.target.value
+              let z = vm
+              let exp = attr.value.split('.')
+              exp.forEach(k => {
+                if (typeof z[k] == 'object') {
+                  z = z[k]
+                } else {
+                  z[k] = newVal1
+                }
+              })
+            })
+          }
+        })
+      }
+      if (node.childNodes) {
+        replace(vm, node)
+      }
+    })
+  }
+  vm.$el.appendChild(fragment)
+}
+
+function Dep () {
+  this.subs = []
+}
+Dep.prototype.addSub = function (sub) {
+  this.subs.push(sub)
+}
+Dep.prototype.notify = function () {
+  this.subs.forEach(sub => sub.update())
+}
+
+function Watcher (vm, exp, fn) {
+  this.fn = fn
+  this.vm = vm
+  this.exp = exp
+  Dep.target = this
+  let val = vm
+  let arr = this.exp
+  arr.forEach(key => {
+    val = val[key]
+  })
+  Dep.target = null
+}
+Watcher.prototype.update = function () {
+  let val = this.vm
+  let arr = this.exp
+  arr.forEach(key => {
+    val = val[key]
+  })
+  this.fn(val)
+}
+
+function initComputed (vm, computed) {
+  Object.keys(computed).forEach(key => {
+    Object.defineProperty(vm, key, {
+      enumerable: true,
+      get:  typeof computed[key] === 'function' ? computed[key] : computed[key].get,
+      set () {}
+    })
+  })
+}
+
+```
+
