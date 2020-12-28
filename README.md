@@ -1009,3 +1009,89 @@ function initComputed (vm, computed) {
 
 ```
 
+#### 46.js继承的几种方式
+
+##### 父类：
+
+```javascript
+function Anmial (name) {
+    this.name = name || 'Anmial'
+    this.sleep = function () {
+        console.log(this.name + 'sleep')
+    }
+}
+Anmial.prototype.eat = function (food) {
+    console.log(this.name + 'eat')
+}
+```
+
+##### 1.原型链继承：将父类的实例作为子类的原型
+
+```javascript
+function Cat () {}
+Cat.prototype = new Anmial()
+Cat.prototype.name = 'cat'
+
+var cat = new Cat()
+console.log(cat.name)
+console.log(cat.eat('fish'))
+console.log(cat instanceof Anmial)// true
+console.log(cat instanceof Cat) // true
+```
+
+1.子类的实例也是父类的实例
+
+2.父类新增原型方法/原型属性，子类都能访问
+
+3.简单，易于实现
+
+##### 2.构造继承：使用父类的构造函数增加子类实例，复制父类的实例属性给子类
+
+```javascript
+function Cat (name) {
+    Animal.call(this)
+    this.name = name || 'Tom'
+}
+var cat = new Cat()
+console.log(cat.name)
+console.log(cat.sleep())
+console.log(cat instanceof Animal) // false
+console.log(cat instanceof Cat) // true
+```
+
+1.解决了子类实例和父类实例引用属性
+
+2.创建子类实例时，可以向父类传递参数
+
+3.可以实现多个继承
+
+##### 3.组合继承：通过调用父类构造，继承父类的属性并保留传参优点，然后通过父类实例作为子类愿你吸纳光，实现函数复用
+
+```javascript
+function Cat (name) {
+    Animal.call(this)
+    this.name = name || 'Tom'
+}
+Cat.prototype = new Animal()
+var cat = new Cat()
+console.log(cat.name)
+console.log(cat.sleep())
+console.log(cat instanceof Animal) // true
+console.log(cat instanceif Cat) // true
+
+```
+
+1.可以继承实例属性/方法，也可以继承原型属性/方法
+
+2.既是子类实例，也是父类实例
+
+3.不存在引用属性共享
+
+4.可传参
+
+5/函数可以复用
+
+
+
+
+
