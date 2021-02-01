@@ -547,7 +547,143 @@ module.exports = {
 }
 ```
 
+#### 3.module
 
+```javascript
+//webpack.config.js
+module.exports = {
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                // 排除node_modules
+                exclude: /node_modules/,
+                // 只检查src下的js文件
+                include: resolve(__dirname, 'src'),
+                // 优先执行
+                enfore: 'pre',
+                // 延后执行
+                enfore: 'post',
+                // 单个loader
+                loader: '',
+                options: {}
+            }
+        ]
+    }
+}
+```
 
+#### 4.resolve
 
+```javascript
+//webpack.config.js
+module.exports = {
+    // 配置解析模块的路径别名；优点：简写路径、缺点：路径没有提示
+    alias: {
+        $css: resolve(__dirname, 'src')
+    },
+    // 配置省略文件路径的后缀名
+    extensions: ['.js', '.json', '.css'],
+    // 告诉webpack 解析模块是去哪里目录找
+    modules: [resolve(__dirname, '../../node_modules'), 'node_modules']
+}
+```
+
+#### 5.devServer
+
+```javascript
+// webpack.config.js
+module.exports = {
+    devServer: {
+        // 构建项目后的路径
+        contentBase: resolve(__dirname, 'build'),
+        // 监视contentBase 目录下的所有文件，一旦文件发生变化就会reload
+        watchContentBase: true,
+        watchOptions: {
+            // 忽略文件
+            ignore: /node_modules/
+        },
+        // 启动gzip压缩
+        compress: true,
+        // 端口
+        port: 3000,
+        // 自动打开浏览器
+        open: true,
+        // 域名
+        host: 'localhost',
+        // 开启HMR
+        hot: true,
+        // 不要显示启动服务器日志信息
+        clientLogLevel: 'none',
+        // 除了一些基本信息以外，其他内容不要显示
+        quiet: true,
+        // 如果出错，不要全屏提示
+        overlay: false,
+        // 服务器代理
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3000',
+                // 发送请求时，请求路径会重写，将/api/xxx --> /xxx(去掉/api)
+                pathRewrite: {
+                    '^/api': ''
+                }
+            }
+        }
+    }
+}
+```
+
+#### 6.optimization(针对生产环境)
+
+```javascript
+// webpack.config.js
+module.exports = {
+    optimization: {
+        splitChunks: {
+            chunks: 'all',
+            // 一下均为默认配置，可以不写
+            minSize: 30 * 1024, // 分隔的chunk最小为30KB
+            maxSize: 0, // 最大不限制
+            minChunks: 1, // 要提取的chunk最少被引用一次
+            maxAsyncRequests: 5, // 按需加载时并行加载的文件最大数量
+            maxInitialRequests: 3, // 入口js文件最大并行请求数量
+            automaticNameDelimiter: '~', // 名称连接符
+            name: true, // 可以使用命名规则
+            cacheGroups: { // 分割chunk的组
+                // node_modules 文件会被打包到vendors 组的chunk中 -- vendors.XX.js
+                // 满足上面的公共规则，如大小要超过30kb，至少引用一次
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    // 打包优先级
+                    priority: -10
+                },
+                default: {
+                    // 要提取的chunk最少被引用两次
+                    minChunks: 2,
+                    // 优先级
+                    priority: -20,
+                    // 如果当前要打包的模块，和之前已经被提取的模块时同一个，就会复用而不是重新打包
+                    reuseExistingChunk: true
+                }
+            }
+        },
+        // 将当前模块的记录其他模块的hash单独打包为一个文件runtime
+        // 解决：修改a文件导致b文件的contenthash变化
+        runtimeChunk: {
+            name: entrypoint => `runtime-${entrypoint.name}`
+        },
+        minimizer: [
+            // 配置生产环境的压缩方案：js和css  webpack 4.26以上版本使用terser做的压缩
+            new TerserWebpackPlugin({
+                // 开启缓存
+                cache: true,
+                // 开启多进程打包
+                parallel: true,
+                // 启用sourece-map
+                soureceMap: true
+            })
+        ]
+    }
+}
+```
 
