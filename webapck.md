@@ -687,3 +687,22 @@ module.exports = {
 }
 ```
 
+## 五、插件
+
+#### 1.speed-measure-webpack-plugin（测量构建时间）
+
+- 分析打包过程中，plugins、loader以及output的时间，针对性优化
+
+#### 2.webpack-bundle-analyzer（分析包内容）
+
+- 注意：webpack4 在 `production` 环境下默认启动了 `ModuleConcatenationPlugin` （预编译所有模块到一个闭包中，提升代码在浏览器中的执行速度），它可能会合并webpack-bundle-analyzer 输出中的模块的一部分，从而使报告不太详细。如果你使用此插件，请在分析过程中将其禁用。设置如下：
+
+```javascript
+module.exports = {
+  // ...
+  optimization: {
+    // 
+    concatenateModules: false,
+  }
+```
+
