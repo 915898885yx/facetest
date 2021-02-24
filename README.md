@@ -411,6 +411,19 @@ function once (ele, eventType, fn) {
 
   action：可以异步，但不能直接操作state
 
+#### 25.1 vuex如何知道state是否通过mutation修改的
+
+```javascript
+_withCommit (fn) {
+    const committing = this._committing
+    this._committing = true
+    fn()
+    this._committing = committing
+}
+```
+
+
+
 #### 26.v-html会导致哪些问题？
 
 + v-html更新的元素是innerHTML，内容按照普通的HTML插入，不会作为Vue模板进行编译，但是有时候我们需要渲染html片段中插值表达式，或者按照vue模板语法给dom元素绑定事件

@@ -489,7 +489,7 @@ document.getElementById('btn').onclick = function () {
   - workbox --> workbox-webpack-plugin
 
 ```javascript
-new WorkboxWebpackOlugin.GenerateSW({
+new WorkboxWebpackPlugin.GenerateSW({
     /*
     	1.帮助seriveWorker快速启动
     	2.删除旧的serviceworker
@@ -578,14 +578,16 @@ module.exports = {
 ```javascript
 //webpack.config.js
 module.exports = {
-    // 配置解析模块的路径别名；优点：简写路径、缺点：路径没有提示
-    alias: {
-        $css: resolve(__dirname, 'src')
-    },
-    // 配置省略文件路径的后缀名
-    extensions: ['.js', '.json', '.css'],
-    // 告诉webpack 解析模块是去哪里目录找
-    modules: [resolve(__dirname, '../../node_modules'), 'node_modules']
+    resolve: {
+        // 配置解析模块的路径别名；优点：简写路径、缺点：路径没有提示
+        alias: {
+            $css: resolve(__dirname, 'src')
+        },
+        // 配置省略文件路径的后缀名
+        extensions: ['.js', '.json', '.css'],
+        // 告诉webpack 解析模块是去哪里目录找
+        modules: [resolve(__dirname, '../../node_modules'), 'node_modules']
+    }
 }
 ```
 
