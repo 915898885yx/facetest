@@ -1117,6 +1117,39 @@ Function.prototype.bind = function() {
 };
 ```
 
+#### 47.1-call实现
+
+```javascript
+Function.prototype.myCall = function (context) {
+  context = context ? Object(context) : window 
+  context.fn = this;
+
+  let args = [...arguments].slice(1);
+  const result = context.fn(...args);
+  delete context.fn;
+  return result;
+}
+```
+
+#### 47.2-apply
+
+```javascript
+Function.prototype.myApply = function (context) {
+  context = context ? Object(context) : window;
+  context.fn = this;
+
+  let args = [...arguments][1];
+  let result;
+  if (args.length === 0) {
+      result = context.fn();
+  } else {
+      result = context.fn(args);
+  }
+  delete context.fn;
+  return result;
+}
+```
+
 #### 48.虚拟列表实现
 
 ```javascript
