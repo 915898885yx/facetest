@@ -411,6 +411,19 @@ function once (ele, eventType, fn) {
 
   action：可以异步，但不能直接操作state
 
+#### 25.1 vuex如何知道state是否通过mutation修改的
+
+```javascript
+_withCommit (fn) {
+    const committing = this._committing
+    this._committing = true
+    fn()
+    this._committing = committing
+}
+```
+
+
+
 #### 26.v-html会导致哪些问题？
 
 + v-html更新的元素是innerHTML，内容按照普通的HTML插入，不会作为Vue模板进行编译，但是有时候我们需要渲染html片段中插值表达式，或者按照vue模板语法给dom元素绑定事件
@@ -1090,6 +1103,175 @@ console.log(cat instanceif Cat) // true
 4.可传参
 
 5/函数可以复用
+
+#### 47.bind实现
+
+```javascript
+Function.prototype.bind = function() {
+  var thatFunc = this, thatArg = arguments[0];
+  var args = slice.call(arguments, 1);
+  return function(){
+    var funcArgs = args.concat(slice.call(arguments))
+    return thatFunc.apply(thatArg, funcArgs);
+  };
+};
+```
+
+#### 47.1-call实现
+
+```javascript
+Function.prototype.myCall = function (context) {
+  context = context ? Object(context) : window 
+  context.fn = this;
+
+  let args = [...arguments].slice(1);
+  const result = context.fn(...args);
+  delete context.fn;
+  return result;
+}
+```
+
+#### 47.2-apply
+
+```javascript
+Function.prototype.myApply = function (context) {
+  context = context ? Object(context) : window;
+  context.fn = this;
+
+  let args = [...arguments][1];
+  let result;
+  if (args.length === 0) {
+      result = context.fn();
+  } else {
+      result = context.fn(args);
+  }
+  delete context.fn;
+  return result;
+}
+```
+
+#### 48.虚拟列表实现
+
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>简单实现虚拟列表</title>
+  </head>
+  <style>
+    .list-view {
+      height: 400px;
+      overflow: auto;
+      position: relative;
+      border: 1px solid #aaa;
+    }
+
+    .list-view-phantom {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      z-index: -1;
+    }
+
+    .list-view-content {
+      left: 0;
+      right: 0;
+      top: 0;
+      position: absolute;
+    }
+
+    .list-view-item {
+      padding: 5px;
+      color: #666;
+      line-height: 30px;
+      box-sizing: border-box;
+    }
+
+    [v-cloak] {
+      display: none;
+    }
+  </style>
+
+  <body>
+    <div id="app" v-cloak>
+      <div class="list-view" ref="scrollBox" @scroll="handleScroll">
+        <div
+          class="list-view-phantom"
+          :style="{
+                       height: contentHeight
+                    }"
+        ></div>
+        <div ref="content" class="list-view-content">
+          <div
+            class="list-view-item"
+            :style="{
+                        height: itemHeight + 'px'
+                      }"
+            v-for="item in visibleData"
+          >
+            {{ item }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+      new Vue({
+        el: "#app",
+        computed: {
+          contentHeight() {
+            return this.data.length * this.itemHeight + "px";
+          },
+        },
+        mounted() {
+          this.updateVisibleData();
+        },
+        data() {
+          return {
+            data: new Array(100).fill(1),
+            itemHeight: 30,
+            visibleData: [],
+          };
+        },
+        methods: {
+          updateVisibleData(scrollTop = 0) {
+            const visibleCount = Math.ceil(
+              this.$refs.scrollBox.clientHeight / this.itemHeight
+            );
+            const start = Math.floor(scrollTop / this.itemHeight);
+            const end = start + visibleCount;
+            this.visibleData = this.data.slice(start, end);
+            this.$refs.content.style.webkitTransform = `translate3d(0, ${
+              start * this.itemHeight
+            }px, 0)`;
+          },
+          handleScroll() {
+            const scrollTop = this.$refs.scrollBox.scrollTop;
+            this.updateVisibleData(scrollTop);
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
+```
+
+#### 49.vue-router全局路由钩子和组件路由钩子
+
+- 全局钩子
+  - beforeEach(to, from, next)
+  - adterEach(route => {})
+
+- 路由独享钩子
+  - beforeEnter(to, from, next)
+- 组件内的钩子
+  - beforeRouteEnter(to, from, next)【不能访问this】
+  - beforeRouteUpdate(to, from, next)
+  - beforeRouteLeave(to, from, next)
 
 
 
