@@ -31,3 +31,10 @@
 ])
 ```
 
+#### 1.webpack5个核心概念
+
+- Entry
+- Output
+- Loader
+- Plugins
+- Mode
